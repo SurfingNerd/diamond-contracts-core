@@ -24,29 +24,8 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
     // WARNING: since this contract is upgradeable, do not remove
     // existing storage variables and do not change their types!
 
-    mapping(address => uint256[]) internal _epochsPoolGotRewardFor;
-
-    /// @dev The reward amount to be distributed in native coins among participants (the validator and their
-    /// delegators) of the specified pool (mining address) for the specified staking epoch.
-    mapping(uint256 => mapping(address => uint256)) public epochPoolNativeReward;
-
     /// @dev The total reward amount in native coins which is not yet distributed among pools.
     uint256 public nativeRewardUndistributed;
-
-    /// @dev The total amount staked into the specified pool (mining address)
-    /// before the specified staking epoch. Filled by the `_snapshotPoolStakeAmounts` function.
-    mapping(uint256 => mapping(address => uint256)) public snapshotPoolTotalStakeAmount;
-
-    /// @dev The validator's amount staked into the specified pool (mining address)
-    /// before the specified staking epoch. Filled by the `_snapshotPoolStakeAmounts` function.
-    mapping(uint256 => mapping(address => uint256)) public snapshotPoolValidatorStakeAmount;
-
-    /// @dev The validator's min reward percent which was actual at the specified staking epoch.
-    /// This percent is taken from the VALIDATOR_MIN_REWARD_PERCENT constant and saved for every staking epoch
-    /// by the `reward` function. Used by the `delegatorShare` and `validatorShare` public getters.
-    /// This is needed to have an ability to change validator's min reward percent in the VALIDATOR_MIN_REWARD_PERCENT
-    /// constant by upgrading the contract.
-    mapping(uint256 => uint256) public validatorMinRewardPercent;
 
     /// @dev the Delta Pool holds all coins that never got emitted, since the maximum supply is 4,380,000
     uint256 public deltaPot;
@@ -79,7 +58,8 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
     /// `governancePotAddress`. See also `governancePotShareNominator`
     uint256 public governancePotShareDenominator;
 
-    uint256 public constant VALIDATOR_MIN_REWARD_PERCENT = 30; // 30%
+    uint256 public validatorMinPercent = 20; // 20%
+
     uint256 public constant REWARD_PERCENT_MULTIPLIER = 1000000;
 
 
@@ -131,7 +111,6 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
         require(!isInitialized(), "initialization can only be done once");
         require(_validatorSet != address(0), "ValidatorSet must not be 0");
         validatorSetContract = IValidatorSetHbbft(_validatorSet);
-        validatorMinRewardPercent[0] = VALIDATOR_MIN_REWARD_PERCENT;
 
         deltaPotPayoutFraction = 6000;
         reinsertPotPayoutFraction = 6000;
@@ -233,8 +212,6 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
             for (i = 0; i < miningAddresses.length; i++) {
                 _snapshotPoolStakeAmounts(stakingContract, nextStakingEpoch, miningAddresses[i]);
             }
-            // Remember validator's min reward percent for the upcoming staking epoch
-            validatorMinRewardPercent[nextStakingEpoch] = VALIDATOR_MIN_REWARD_PERCENT;
 
             // the rewards got distributed, 
             // we now can finalize the epoch and start with a new one.
@@ -265,14 +242,6 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
     }
 
     // =============================================== Getters ========================================================
-    /// @dev Returns an array of epoch numbers for which the specified pool (mining address)
-    /// got a non-zero reward.
-    function epochsPoolGotRewardFor(address _miningAddress)
-    public
-    view
-    returns(uint256[] memory) {
-        return _epochsPoolGotRewardFor[_miningAddress];
-    }
 
     /// @dev Returns a boolean flag indicating if the `initialize` function has been called.
     function isInitialized()
@@ -280,63 +249,6 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
     view
     returns(bool) {
         return validatorSetContract != IValidatorSetHbbft(0);
-    }
-
-    /// @dev Returns an array of epoch numbers for which the specified staker
-    /// can claim a reward from the specified pool by the `StakingHbbft.claimReward` function.
-    /// @param _poolStakingAddress The pool staking address.
-    /// @param _staker The staker's address (delegator or candidate/validator).
-    function epochsToClaimRewardFrom(
-        address _poolStakingAddress,
-        address _staker
-    )
-    public
-    view
-    returns(uint256[] memory epochsToClaimFrom) {
-        address miningAddress = validatorSetContract.miningByStakingAddress(_poolStakingAddress);
-        IStakingHbbft stakingContract = IStakingHbbft(validatorSetContract.stakingContract());
-        bool isDelegator = _poolStakingAddress != _staker;
-        uint256 firstEpoch;
-        uint256 lastEpoch;
-
-        if (isDelegator) {
-            firstEpoch = stakingContract.stakeFirstEpoch(_poolStakingAddress, _staker);
-            if (firstEpoch == 0) {
-                return (new uint256[](0));
-            }
-            lastEpoch = stakingContract.stakeLastEpoch(_poolStakingAddress, _staker);
-        }
-
-        uint256[] storage epochs = _epochsPoolGotRewardFor[miningAddress];
-        uint256 length = epochs.length;
-
-        uint256[] memory tmp = new uint256[](length);
-        uint256 tmpLength = 0;
-        uint256 i;
-
-        for (i = 0; i < length; i++) {
-            uint256 epoch = epochs[i];
-            if (isDelegator) {
-                if (epoch < firstEpoch) {
-                    // If the delegator staked for the first time before
-                    // the `epoch`, skip this staking epoch
-                    continue;
-                }
-                if (lastEpoch <= epoch && lastEpoch != 0) {
-                    // If the delegator withdrew all their stake before the `epoch`,
-                    // don't check this and following epochs since it makes no sense
-                    break;
-                }
-            }
-            if (!stakingContract.rewardWasTaken(_poolStakingAddress, _staker, epoch)) {
-                tmp[tmpLength++] = epoch;
-            }
-        }
-
-        epochsToClaimFrom = new uint256[](tmpLength);
-        for (i = 0; i < tmpLength; i++) {
-            epochsToClaimFrom[i] = tmp[i];
-        }
     }
 
     /// @dev Returns the reward coefficient for the specified validator. The given value should be divided by 10000
@@ -388,7 +300,7 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
     /// @param _totalStaked The total amount staked by a validator and their delegators.
     /// @param _poolReward The value of pool reward.
     function delegatorShare(
-        uint256 _stakingEpoch,
+       /* uint256 _stakingEpoch, */
         uint256 _delegatorStaked,
         uint256 _validatorStaked,
         uint256 _totalStaked,
@@ -402,7 +314,7 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
         }
         uint256 share = 0;
         uint256 delegatorsStaked = _totalStaked >= _validatorStaked ? _totalStaked - _validatorStaked : 0;
-        uint256 validatorMinPercent = validatorMinRewardPercent[_stakingEpoch];
+
         if (_validatorStaked * (100 - validatorMinPercent) > delegatorsStaked * validatorMinPercent) {
             // Validator has more than validatorMinPercent %
             share = _poolReward * _delegatorStaked / _totalStaked;
@@ -420,7 +332,7 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
     /// @param _totalStaked The total amount staked by a validator and their delegators.
     /// @param _poolReward The value of pool reward.
     function validatorShare(
-        uint256 _stakingEpoch,
+       /* uint256 _stakingEpoch, */
         uint256 _validatorStaked,
         uint256 _totalStaked,
         uint256 _poolReward
@@ -433,7 +345,7 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
         }
         uint256 share = 0;
         uint256 delegatorsStaked = _totalStaked >= _validatorStaked ? _totalStaked - _validatorStaked : 0;
-        uint256 validatorMinPercent = validatorMinRewardPercent[_stakingEpoch];
+
         if (_validatorStaked * (100 - validatorMinPercent) > delegatorsStaked * validatorMinPercent) {
             // Validator has more than validatorMinPercent %
             share = _poolReward * _validatorStaked / _totalStaked;
@@ -489,10 +401,13 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
         // Number of validators that are being rewarded.
         uint256 numRewardedValidators;
 
+        IStakingHbbft stakingContract = IStakingHbbft(validatorSetContract.stakingContract());
+
         for (uint256 i = 0; i < validators.length; i++) {
+            uint256 stakeAmountOfValidator = stakingContract.stakeAmountTotal(validators[i]);
             if (
                 !validatorSetContract.isValidatorBanned(validators[i]) &&
-                snapshotPoolValidatorStakeAmount[_stakingEpoch][validators[i]] != 0
+                stakeAmountOfValidator != 0
             ) {
                 isRewardedValidator[i] = true;
                 numRewardedValidators++;
@@ -511,13 +426,17 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
             for (uint256 i = 0; i < numValidators; i++) {
                 if (isRewardedValidator[i]){
                     //DEBUG: this require has been added for debug reasons.
-                    require(epochPoolNativeReward[_stakingEpoch][validators[i]] == 0, 
-                        'cant distribute rewards: there is already a pool reward defined for this epoch and validator');
-                    epochPoolNativeReward[_stakingEpoch][validators[i]] = poolReward;
+                    //require(epochPoolNativeReward[_stakingEpoch][validators[i]] == 0, 
+                    //    'cant distribute rewards: there is already a pool reward defined for this epoch and validator');
+                    //epochPoolNativeReward[_stakingEpoch][validators[i]] = poolReward;
                     
-                    distributedAmount += poolReward;
+                    //distributedAmount += poolReward;
 
-                    _epochsPoolGotRewardFor[validators[i]].push(_stakingEpoch);
+                    //_epochsPoolGotRewardFor[validators[i]].push(_stakingEpoch);
+
+                    TODO: Restake pool reward here.
+                    // epochPoolNativeReward
+                    stakingContract.restakePoolReward(validators[i], reward);
                 }
             }
         }
@@ -550,19 +469,5 @@ contract BlockRewardHbbftBase is UpgradeableOwned, IBlockRewardHbbft {
         snapshotPoolTotalStakeAmount[_stakingEpoch][_miningAddress] = totalAmount;
         snapshotPoolValidatorStakeAmount[_stakingEpoch][_miningAddress] =
             _stakingContract.stakeAmount(stakingAddress, stakingAddress);
-    }
-
-    /// @dev Called by the `transferReward` of a child contract to transfer native coins
-    /// from the balance of the `BlockRewardHbbft` contract to the specified address as a reward.
-    /// @param _amount The amount of native coins to transfer as a reward.
-    /// @param _to The target address to transfer the amounts to.
-    function _transferNativeReward(uint256 _amount, address payable _to)
-    internal {
-        if (_amount != 0 && !_to.send(_amount)) {
-            // We use the `Sacrifice` trick to be sure the coins can be 100% sent to the receiver.
-            // Otherwise, if the receiver is a contract which has a revert in its fallback function,
-            // the sending will fail.
-            (new Sacrifice).value(_amount)(_to);
-        }
     }
 }
