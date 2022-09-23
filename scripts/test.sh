@@ -25,9 +25,9 @@ ganache_running() {
 
 start_ganache() {
   if [ "$SOLIDITY_COVERAGE" = true ]; then
-    node_modules/.bin/testrpc-sc --allowUnlimitedContractSize --gasLimit 0xfffffffffff --port "$ganache_port" --accounts 200 --defaultBalanceEther 1000000 > /dev/null &
+    node_modules/.bin/testrpc-sc --chain.allowUnlimitedContractSize --gasLimit 0xfffffffffff --port "$ganache_port" --accounts 200 --defaultBalanceEther 1000000 > /dev/null &
   else
-    node_modules/.bin/ganache-cli --allowUnlimitedContractSize --gasLimit 0xfffffffffff --port "$ganache_port" --accounts 200 --defaultBalanceEther 1000000 --mnemonic "found era catch basic dce engine company actor impact fiess fresh food" > /dev/null &
+    node_modules/.bin/ganache-cli --chain.allowUnlimitedContractSize --gasLimit 0xfffffffffff --port "$ganache_port" --accounts 200 --defaultBalanceEther 1000000 --mnemonic "found era catch basic dce engine company actor impact fiess fresh food" > /dev/null &
   fi
 
   ganache_pid=$!
@@ -48,5 +48,5 @@ if [ "$SOLIDITY_COVERAGE" = true ]; then
     cat coverage/lcov.info | node_modules/.bin/coveralls
   fi
 else
-  node_modules/.bin/truffle test "$@" --network test
+  node_modules/.bin/truffle test "$@" --compile-none --network test
 fi

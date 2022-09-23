@@ -100,6 +100,21 @@ module.exports = {
       timeoutBlocks: 200
     },
 
+
+    performance: {
+      provider: function() {
+        return new HDWalletProvider(
+          { mnemonic: mnemonic,
+            providerOrUrl: 'http://127.0.0.1:8540',
+            numberOfAddresses: 100}
+          );
+      },
+      network_id: '*',
+      networkCheckTimeout: 1000000,
+      timeoutBlocks: 200
+    },
+
+
     testNet: {
       provider: function() {
         return new HDWalletProvider(
@@ -126,14 +141,15 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.5.17",      // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.17",      // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,       // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {            // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
           enabled: true,
           runs: 200
         },
-        evmVersion: "istanbul"
+        evmVersion: "london",
+        viaIR: true,
       }
     }
   }

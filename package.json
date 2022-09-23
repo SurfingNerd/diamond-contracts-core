@@ -13,7 +13,7 @@
     "solhint": "node_modules/.bin/solhint \"contracts/**/*.sol\"",
     "solidity-docgen": "rm -rf docs/docs/api* && npm i && solidity-docgen --exclude interfaces,libs,ERC677BridgeTokenRewardable.sol,Migrations.sol . contracts docs && node docs/website/sidebars-fix.js",
     "generate-uml": "sol2uml ./contracts -o docs/classDiagram.svg",
-    "runGanache": "node_modules/.bin/ganache-cli  --allowUnlimitedContractSize --gasLimit 0xfffffffffff --port \"8545\" --accounts 200 --defaultBalanceEther 1000000 --mnemonic \"vanish project fall sister ceiling extend repeat stool promote magnet century engine trouble blanket fruit\"",
+    "runGanache": "node_modules/.bin/ganache-cli --gasLimit 0xfffffffffff --port \"8545\" --accounts 200 --defaultBalanceEther 1000000 --mnemonic \"vanish project fall sister ceiling extend repeat stool promote magnet century engine trouble blanket fruit\"",
     "test": "node scripts/check_for_clashing.js && bash scripts/test.sh",
     "testNoUpgradeProxy": "export CONTRACTS_NO_UPGRADE_PROXY=true && node scripts/check_for_clashing.js && bash scripts/test.sh",
     "testOnTestnet": "export CONTRACTS_NO_UPGRADE_PROXY=true && ./node_modules/.bin/truffle test  --network testNet test/KeyGenHistory.js test/mockContracts/BlockRewardHbbftCoinsMock.sol  test/mockContracts/RandomHbbftMock.sol test/mockContracts/ValidatorSetHbbftMock.sol test/mockContracts/StakingHbbftCoinsMock.sol",
@@ -21,6 +21,7 @@
     "getTestnetState": "truffle exec --network testNet scripts/getCurrentState.js",
     "feedTestAccountsOnTestnet": "./node_modules/.bin/truffle exec scripts/feedTestAccounts.js --network testNet",
     "testDev": "bash scripts/test.sh test/StakingHbbft.js test/mockContracts/BlockRewardHbbftCoinsMock.sol  test/mockContracts/RandomHbbftMock.sol test/mockContracts/ValidatorSetHbbftMock.sol test/mockContracts/StakingHbbftCoinsMock.sol",
+    "test-block-reward": "bash scripts/test.sh test/BlockRewardHbbft.js test/mockContracts/BlockRewardHbbftCoinsMock.sol  test/mockContracts/RandomHbbftMock.sol test/mockContracts/ValidatorSetHbbftMock.sol test/mockContracts/StakingHbbftCoinsMock.sol",
     "updateContract": "truffle exec --network testNet scripts/contractUpdates/update_single_contract.js"
   },
   "repository": {
@@ -33,6 +34,7 @@
   },
   "homepage": "https://github.com/poanetwork/posdao-contracts#readme",
   "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.7.3",
     "@truffle/hdwallet-provider": "^1.2.2",
     "lodash": "^4.17.20",
     "solidity-docgen": "^0.4.1",
@@ -47,9 +49,9 @@
     "ganache-cli": "^6.12.2",
     "mochawesome": "^6.1.1",
     "node-fetch": "^2.6.0",
-    "solc": "^0.5.16",
+    "solc": "^0.8.17",
     "solhint": "^3.3.4",
     "solidity-coverage": "^0.7.15",
-    "truffle": "^5.1.49"
+    "truffle": "^5.5.31"
   }
 }
