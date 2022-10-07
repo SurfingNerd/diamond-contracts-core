@@ -18,7 +18,7 @@ let currentAccounts;
 
 // delegatecall are a problem for truffle debugger
 // therefore it makes sense to use a proxy for automated testing to have the proxy testet.
-// and to not use it if specific transactions needs to get debugged, 
+// and to not use it if specific transactions needs to get debugged,
 // like truffle `debug 0xabc`.
 const useUpgradeProxy = !(process.env.CONTRACTS_NO_UPGRADE_PROXY == 'true');
 console.log('useUpgradeProxy:', useUpgradeProxy);
@@ -50,7 +50,7 @@ contract('StakingHbbft', async accounts => {
 
   const stakingWithdrawDisallowPeriod = new BN(1);
 
-  // the reward for the first epoch. 
+  // the reward for the first epoch.
   const epochReward = new BN(web3.utils.toWei('1', 'ether'));
 
   // the amount the deltaPot gets filled up.
@@ -544,7 +544,7 @@ contract('StakingHbbft', async accounts => {
       await timeTravelToEndEpoch();
 
       // we restock this one epoch reward that got payed out.
-      // todo: think about: Maybe this restocking should happen in the timeTravelToEndEpoch function to have 
+      // todo: think about: Maybe this restocking should happen in the timeTravelToEndEpoch function to have
       // constant epoch payouts.
       await blockRewardHbbft.addToDeltaPot({ value: epochPoolReward }).should.be.fulfilled;
 
@@ -1001,7 +1001,7 @@ contract('StakingHbbft', async accounts => {
         [6, 8, 10]
       );
     });
-    
+
 
     it('random withdrawal 1', async () => {
       await testClaimRewardRandom(
@@ -2091,7 +2091,7 @@ contract('StakingHbbft', async accounts => {
 
     it('should remove a pool', async () => {
       (await stakingHbbft.getPools.call()).should.be.deep.equal(initialStakingAddresses);
-      await stakingHbbft.setValidatorSetAddress(accounts[7]).should.be.fulfilled;
+      await stakingHbbft.setValidatorMockSetAddress(accounts[7]).should.be.fulfilled;
       await stakingHbbft.removePool(initialStakingAddresses[0], { from: accounts[7] }).should.be.fulfilled;
       (await stakingHbbft.getPools.call()).should.be.deep.equal([
         initialStakingAddresses[2],
@@ -2100,18 +2100,18 @@ contract('StakingHbbft', async accounts => {
       (await stakingHbbft.getPoolsInactive.call()).length.should.be.equal(0);
     });
     it('can only be called by the ValidatorSetHbbft contract', async () => {
-      await stakingHbbft.setValidatorSetAddress(accounts[7]).should.be.fulfilled;
+      await stakingHbbft.setValidatorMockSetAddress(accounts[7]).should.be.fulfilled;
       await stakingHbbft.removePool(initialStakingAddresses[0], { from: accounts[8] }).should.be.rejectedWith("Only ValidatorSet");
     });
     it('shouldn\'t fail when removing a nonexistent pool', async () => {
       (await stakingHbbft.getPools.call()).should.be.deep.equal(initialStakingAddresses);
-      await stakingHbbft.setValidatorSetAddress(accounts[7]).should.be.fulfilled;
+      await stakingHbbft.setValidatorMockSetAddress(accounts[7]).should.be.fulfilled;
       await stakingHbbft.removePool(accounts[10], { from: accounts[7] }).should.be.fulfilled;
       (await stakingHbbft.getPools.call()).should.be.deep.equal(initialStakingAddresses);
     });
     it('should reset pool index', async () => {
       (await stakingHbbft.poolIndex.call(initialStakingAddresses[1])).should.be.bignumber.equal(new BN(1));
-      await stakingHbbft.setValidatorSetAddress(accounts[7]).should.be.fulfilled;
+      await stakingHbbft.setValidatorMockSetAddress(accounts[7]).should.be.fulfilled;
       await stakingHbbft.removePool(initialStakingAddresses[1], { from: accounts[7] }).should.be.fulfilled;
       (await stakingHbbft.poolIndex.call(initialStakingAddresses[1])).should.be.bignumber.equal(new BN(0));
     });
@@ -2131,7 +2131,7 @@ contract('StakingHbbft', async accounts => {
       ]);
 
       // Remove the pool
-      await stakingHbbft.setValidatorSetAddress(accounts[7]).should.be.fulfilled;
+      await stakingHbbft.setValidatorMockSetAddress(accounts[7]).should.be.fulfilled;
       (await stakingHbbft.poolInactiveIndex.call(initialStakingAddresses[0])).should.be.bignumber.equal(new BN(0));
       await stakingHbbft.removePool(initialStakingAddresses[0], { from: accounts[7] }).should.be.fulfilled;
       (await stakingHbbft.getPoolsInactive.call()).should.be.deep.equal([initialStakingAddresses[0]]);
