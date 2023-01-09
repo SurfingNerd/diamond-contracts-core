@@ -1081,7 +1081,7 @@ contract StakingHbbftBase is UpgradeableOwned, IStakingHbbft {
     function _deletePoolToBeRemoved(address _stakingAddress) internal {
         uint256 indexToDelete = poolToBeRemovedIndex[_stakingAddress];
         if (
-            _poolsToBeRemoved.length > indexToDelete &&
+                .length > indexToDelete &&
             _poolsToBeRemoved[indexToDelete] == _stakingAddress
         ) {
             address lastPool = _poolsToBeRemoved[_poolsToBeRemoved.length - 1];
@@ -1114,6 +1114,7 @@ contract StakingHbbftBase is UpgradeableOwned, IStakingHbbft {
         }
         _deletePoolToBeElected(_stakingAddress);
         _deletePoolToBeRemoved(_stakingAddress);
+        validatorSetContract.notifyUnavailability(_stakingAddress);
     }
 
     /// @dev Removes the specified staking address from the array of inactive pools returned by

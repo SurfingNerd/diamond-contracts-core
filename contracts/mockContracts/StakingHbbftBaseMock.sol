@@ -32,7 +32,8 @@ contract StakingHbbftBaseMock is StakingHbbftBase {
     }
 
     function setStakeAmountTotal(address _poolStakingAddress, uint256 _amount)
-        public
+            public
+   
     {
         stakeAmountTotal[_poolStakingAddress] = _amount;
     }
@@ -57,8 +58,14 @@ contract StakingHbbftBaseMock is StakingHbbftBase {
         stakingEpoch = _stakingEpoch;
     }
 
+    // function setValidatorMockSetAddress(IValidatorSetHbbft _validatorSetAddress)
+    //     public
+    // {
+    //     validatorSetContractMock = _validatorSetAddress;
+    // }
+
     function setValidatorSetAddress(IValidatorSetHbbft _validatorSetAddress)
-        public
+            public
     {
         validatorSetContract = _validatorSetAddress;
     }
@@ -67,7 +74,7 @@ contract StakingHbbftBaseMock is StakingHbbftBase {
 
     // =============================================== Private ========================================================
 
-    function _getMaxCandidates() internal pure returns (uint256) {
+    function _getMaxCandidates() internal pure returns  (uint256) {
         return 100;
     }
 }

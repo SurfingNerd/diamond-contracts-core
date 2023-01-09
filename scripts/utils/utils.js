@@ -2,6 +2,8 @@ const fs = require('fs');
 const solc = require('solc');
 
 async function compile(dir, contractName) {
+  console.log('called compile with ', dir);
+
   const input = {
     language: 'Solidity',
     sources: {
@@ -22,6 +24,8 @@ async function compile(dir, contractName) {
       }
     }
   }
+
+  console.log('contenet read:', input.sources[''].content);
 
   const compiled = JSON.parse(solc.compile(JSON.stringify(input), function(path) {
     let content;

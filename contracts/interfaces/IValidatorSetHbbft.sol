@@ -66,6 +66,8 @@ interface IValidatorSetHbbft {
 
     function miningByStakingAddress(address) external view returns (address);
 
+    function notifyUnavailability(address _stakingAddress) external;
+
     function randomContract() external view returns (address);
 
     function reportMaliciousCallable(

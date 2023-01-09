@@ -395,6 +395,12 @@ async function main() {
 }
 
 async function compile(dir, contractName) {
+  if (dir.startsWith('./root')) {
+    console.log('removed troublesome ./root...');
+    dir = dir.substring(1, dir.length - 1);
+    console.log('dir is now:' , dir);
+  }
+
   const compiled = await utils.compile(dir, contractName);
   const abiFile = `abis/${contractName}.json`;
   console.log(`saving abi to ${abiFile}`);
