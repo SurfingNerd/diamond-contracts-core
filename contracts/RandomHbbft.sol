@@ -17,6 +17,9 @@ contract RandomHbbft is UpgradeabilityAdmin, IRandomHbbft {
     /// @dev deprecated slot, was used for randomSeed
     uint256 private deprecated1;
 
+    /// @dev The address of the `ValidatorSet` contract.
+    IValidatorSetHbbft public validatorSetContract;
+
     /// @dev The mapping of random seeds accumulated during RANDAO or another process
     /// (depending on implementation).
     /// blocknumber => random seed
@@ -24,8 +27,6 @@ contract RandomHbbft is UpgradeabilityAdmin, IRandomHbbft {
 
     BitMaps.BitMap private unhealthiness;
 
-    /// @dev The address of the `ValidatorSet` contract.
-    IValidatorSetHbbft public validatorSetContract;
 
     // ============================================== Modifiers =======================================================
 
