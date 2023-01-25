@@ -8,6 +8,7 @@ import "solidity-coverage";
 import "hardhat-contract-sizer";
 import "@openzeppelin/hardhat-upgrades";
 import 'solidity-docgen';
+import fs from "fs";
 import { config as dotenvConfig } from "dotenv";
 import type { NetworkUserConfig } from "hardhat/types";
 // ToDo::check why config excluding gas reporter and typechain
@@ -39,6 +40,15 @@ const chainIds = {
     "polygon-mainnet": 137,
     "polygon-mumbai": 80001,
 };
+
+const getMnemonic = () => {
+    try {
+      return fs.readFileSync(".mnemonic").toString().trim()
+    } catch {
+      // this is a dummy mnemonic
+      return "rival month fortune";
+    }
+  }
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
     let jsonRpcUrl: string;
@@ -79,7 +89,18 @@ const config: {} = {
             optimisticEthereum: process.env.OPTIMISM_API_KEY || "",
             polygon: process.env.POLYGONSCAN_API_KEY || "",
             polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
+            alpha: "123",
         },
+        customChains: [
+            {
+              network: "alpha",
+              chainId: 777012,
+              urls: {
+                apiURL: "http://explorer.uniq.diamonds/api",
+                browserURL: "http://explorer.uniq.diamonds"
+              }
+            }
+          ]
     },
     contractSizer: {
         alphaSort: true,
@@ -112,6 +133,17 @@ const config: {} = {
         optimism: getChainConfig("optimism-mainnet"),
         "polygon-mainnet": getChainConfig("polygon-mainnet"),
         "polygon-mumbai": getChainConfig("polygon-mumbai"),
+        alpha: {
+            url: "http://38.242.206.145:8540",
+            accounts: {
+              mnemonic:  getMnemonic(),
+              path: "m/44'/60'/0'/0",
+              initialIndex: 0,
+              count: 20,
+              passphrase: "",
+            },
+        }
+        
     },
     paths: {
         artifacts: "./artifacts",
@@ -145,7 +177,7 @@ const config: {} = {
     },
     mocha: {
         timeout: 100000000
-    },
+    }
 };
 
 export default config;
