@@ -14,6 +14,7 @@ import type { NetworkUserConfig } from "hardhat/types";
 import type { HardhatUserConfig } from "hardhat/config";
 import { resolve } from "path";
 import { utils } from "ethers";
+import fs from "fs";
 
 const dotenvConfigPath: string = process.env.DOTENV_CONFIG_PATH || "./.env";
 dotenvConfig({ path: resolve(__dirname, dotenvConfigPath) });
@@ -39,6 +40,17 @@ const chainIds = {
     "polygon-mainnet": 137,
     "polygon-mumbai": 80001,
 };
+
+const getMnemonic = () => {
+    try {
+      return fs.readFileSync(".mnemonic").toString().trim()
+    } catch {
+      // this is a dummy mnemonic
+      return "rival month fortune";
+    }
+  }
+  
+  
 
 function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
     let jsonRpcUrl: string;
@@ -70,17 +82,19 @@ function getChainConfig(chain: keyof typeof chainIds): NetworkUserConfig {
 const config: {} = {
     defaultNetwork: "hardhat",
     etherscan: {
-        apiKey: {
-            arbitrumOne: process.env.ARBISCAN_API_KEY || "",
-            avalanche: process.env.SNOWTRACE_API_KEY || "",
-            bsc: process.env.BSCSCAN_API_KEY || "",
-            goerli: process.env.ETHERSCAN_API_KEY || "",
-            mainnet: process.env.ETHERSCAN_API_KEY || "",
-            optimisticEthereum: process.env.OPTIMISM_API_KEY || "",
-            polygon: process.env.POLYGONSCAN_API_KEY || "",
-            polygonMumbai: process.env.POLYGONSCAN_API_KEY || "",
-        },
-    },
+        // apiKey: process.env.ETHERSCAN_API_KEY,
+        apiKey: "123",
+        customChains: [
+          {
+            network: "alpha",
+            chainId: 777012,
+            urls: {
+              apiURL: "http://explorer.uniq.diamonds/api",
+              browserURL: "http://explorer.uniq.diamonds"
+            }
+          }
+        ]
+      },
     contractSizer: {
         alphaSort: true,
         runOnCompile: true,
@@ -112,6 +126,17 @@ const config: {} = {
         optimism: getChainConfig("optimism-mainnet"),
         "polygon-mainnet": getChainConfig("polygon-mainnet"),
         "polygon-mumbai": getChainConfig("polygon-mumbai"),
+        alpha: {
+            url: "http://38.242.206.145:8540",
+            gasPrice: 1000000000,
+            accounts: {
+              mnemonic:  getMnemonic(),
+              path: "m/44'/60'/0'/0",
+              initialIndex: 0,
+              count: 20,
+              passphrase: "",
+            },
+          }
     },
     paths: {
         artifacts: "./artifacts",
