@@ -15,27 +15,10 @@ contract BlockRewardHbbft is Initializable, OwnableUpgradeable, ReentrancyGuardU
         uint256 deltaPotAmount;
         uint256 reinsertPotAmount;
         uint256 governancePotAmount;
-        uint256 totalRewards;
+        uint256 totalRewards;// =============================================== Storage ========================================================
     }
-
-    /**
-     * @dev Represents a parameter range for a specific getter function.
-     * @param getter The getter function signature.
-     * @param range The range of values for the parameter.
-     */
-    struct ParameterRange {
-        bytes4 getter;
-        uint256[] range;
-    }
-
-    // =============================================== Storage ========================================================
-        /**
-     * @dev A mapping that stores the allowed parameter ranges for each function signature.
-     */
-    mapping(bytes4 => ParameterRange) public allowedParameterRange;
-
-    
-    mapping(address => uint256[]) internal _epochsPoolGotRewardFor;
+// =============================================== Storage ======================================// =============================================== Storage ==========================================================================
+    mapping(address => uint256[]) internal _epochsPoolGotRewardFor;// =============================================== Storage ========================================================
 
     /// @dev The reward amount to be distributed in native coins among participants (the validator and their
     /// delegators) of the specified pool (mining address) for the specified staking epoch.
