@@ -45,22 +45,6 @@ const config: HardhatUserConfig = {
         apiKey: "123",
         customChains: [
             {
-                network: "local",
-                chainId: 777012,
-                urls: {
-                    apiURL: "http://127.0.0.1:4000/api",
-                    browserURL: "http://127.0.0.1:4000",
-                },
-            },
-            {
-                network: "beta1",
-                chainId: 27272,
-                urls: {
-                    apiURL: "https://beta-explorer.bit.diamonds/api",
-                    browserURL: "https://beta-explorer.bit.diamonds",
-                },
-            },
-            {
                 network: "testnet",
                 chainId: 37373,
                 urls: {
@@ -107,19 +91,6 @@ const config: HardhatUserConfig = {
             hardfork: "istanbul",
             minGasPrice: 0
         },
-        beta1: {
-            //url: "http://62.171.133.46:55100",
-            url: "https://beta-rpc.bit.diamonds",
-            accounts: {
-                mnemonic: getMnemonic(),
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-                passphrase: "",
-            },
-            gasPrice: 1000000000,
-            hardfork: "london",
-        },
         testnet: {
             url: "http://62.171.133.46:20100",
             accounts: {
@@ -142,63 +113,6 @@ const config: HardhatUserConfig = {
             },
             gasPrice: 1000000000,
         },
-        alpha: {
-            url: "http://38.242.206.145:8540",
-            accounts: {
-                mnemonic: getMnemonic(),
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-                passphrase: "",
-            },
-            gasPrice: 1000000000,
-        },
-        alpha2: {
-            url: "http://rpc.uniq.diamonds",
-            accounts: {
-                mnemonic: getMnemonic(),
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-                passphrase: "",
-            },
-            gasPrice: 1000000000,
-        },
-        alpha3: {
-            url: "http://185.187.170.209:38000",
-            accounts: {
-                mnemonic: getMnemonic(),
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-                passphrase: "",
-            },
-            gasPrice: 1000000000,
-        },
-        alpha4: {
-            url: "http://62.171.133.46:54100",
-            accounts: {
-                mnemonic: getMnemonic(),
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-                passphrase: "",
-            },
-            gasPrice: 1000000000,
-        },
-        alpha5: {
-            //url: "http://62.171.133.46:55100",
-            url: "http://127.0.0.1:8540",
-            accounts: {
-                mnemonic: getMnemonic(),
-                path: "m/44'/60'/0'/0",
-                initialIndex: 0,
-                count: 20,
-                passphrase: "",
-            },
-            gasPrice: 1000000000,
-            hardfork: "london",
-        },
         forked: {
             gasPrice: 0,
             url: "http://127.0.0.1:8545",
@@ -206,7 +120,14 @@ const config: HardhatUserConfig = {
         },
         mainnet: {
             url: "https://rpc.bit.diamonds",
-            chainId: 17771
+            chainId: 17771,
+            accounts: {
+                mnemonic: getMnemonic(),
+                path: "m/44'/60'/0'/0",
+                initialIndex: 0,
+                count: 20,
+                passphrase: "",
+            },
         }
     },
     paths: {
